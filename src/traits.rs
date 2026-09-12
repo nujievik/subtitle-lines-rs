@@ -1,42 +1,9 @@
-use crate::{ByteLines, Result, WriteOptions};
+use crate::{AssLines, ByteLines, Result, SrtLines, VttLines, WriteOptions};
 use std::{
     fs::File,
     io::{BufRead, BufReader, BufWriter, Empty, Write},
     path::Path,
 };
-
-pub trait NewLines<'a> {
-    fn from_bytes<B>(bytes: &'a B) -> Self
-    where
-        Self: From<ByteLines<'a, Empty>>,
-        B: AsRef<[u8]> + ?Sized,
-    {
-        ByteLines::from_bytes(bytes).into()
-    }
-
-    fn from_str<S>(s: &'a S) -> Self
-    where
-        Self: From<ByteLines<'a, Empty>>,
-        S: AsRef<str> + ?Sized,
-    {
-        Self::from_bytes(s.as_ref())
-    }
-
-    fn from_reader<R: BufRead>(reader: R) -> Self
-    where
-        Self: From<ByteLines<'a, R>>,
-    {
-        ByteLines::from_reader(reader).into()
-    }
-
-    fn open_file<P: AsRef<Path>>(path: P) -> Result<Self>
-    where
-        Self: From<ByteLines<'a, BufReader<File>>>,
-    {
-        let f = File::open(path)?;
-        Ok(Self::from_reader(BufReader::new(f)))
-    }
-}
 
 pub trait StreamingIterator {
     type Item<'a>
@@ -71,6 +38,89 @@ pub trait StreamingIterator {
             }
         }
         None
+    }
+}
+
+pub trait NewLines<'a> {
+    fn from_bytes<B>(bytes: &'a B) -> Self
+    where
+        Self: From<ByteLines<'a, Empty>>,
+        B: AsRef<[u8]> + ?Sized,
+    {
+        ByteLines::from_bytes(bytes).into()
+    }
+
+    fn from_str<S>(s: &'a S) -> Self
+    where
+        Self: From<ByteLines<'a, Empty>>,
+        S: AsRef<str> + ?Sized,
+    {
+        Self::from_bytes(s.as_ref())
+    }
+
+    fn from_reader<R: BufRead>(reader: R) -> Self
+    where
+        Self: From<ByteLines<'a, R>>,
+    {
+        ByteLines::from_reader(reader).into()
+    }
+
+    fn open_file<P: AsRef<Path>>(path: P) -> Result<Self>
+    where
+        Self: From<ByteLines<'a, BufReader<File>>>,
+    {
+        let f = File::open(path)?;
+        Ok(Self::from_reader(BufReader::new(f)))
+    }
+}
+
+pub trait ConversionLines<'a, T: BufRead> {
+    fn from_ass(ass: AssLines<'a, T>) -> Self
+    where
+        Self: From<AssLines<'a, T>>,
+    {
+        Self::from(ass)
+    }
+
+    fn from_srt(srt: SrtLines<'a, T>) -> Self
+    where
+        Self: From<SrtLines<'a, T>>,
+    {
+        Self::from(srt)
+    }
+
+    fn from_vtt(vtt: VttLines<'a, T>) -> Self
+    where
+        Self: From<VttLines<'a, T>>,
+    {
+        Self::from(vtt)
+    }
+
+    fn into_ass(self) -> AssLines<'a, T>
+    where
+        AssLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        AssLines::from(self)
+    }
+
+    fn into_srt(self) -> SrtLines<'a, T>
+    where
+        SrtLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        SrtLines::from(self)
+    }
+
+    fn into_vtt(self) -> VttLines<'a, T>
+    where
+        VttLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        VttLines::from(self)
     }
 }
 

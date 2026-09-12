@@ -4,7 +4,7 @@ mod it;
 mod new;
 mod write;
 
-use crate::{ByteLines, NewLines, Result, SourceLines};
+use crate::{ByteLines, ConversionLines, NewLines, Result, SourceLines};
 use it::{IterState, TransIterState};
 use std::{
     fs::File,
@@ -28,3 +28,5 @@ pub(crate) struct RegularAssLines<'a, T: BufRead> {
 pub fn open_file<'a, P: AsRef<Path>>(path: P) -> Result<AssLines<'a, BufReader<File>>> {
     AssLines::open_file(path)
 }
+
+impl<'a, T: BufRead> ConversionLines<'a, T> for AssLines<'a, T> {}

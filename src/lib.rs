@@ -30,7 +30,7 @@ pub use error::Error;
 pub use options::WriteOptions;
 pub use srt::SrtLines;
 pub use time::Time;
-pub use traits::{NewLines, StreamingIterator, WriteLines};
+pub use traits::{ConversionLines, NewLines, StreamingIterator, WriteLines};
 pub use vtt::VttLines;
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -6,7 +6,7 @@ mod it;
 mod new;
 mod write;
 
-use crate::{ByteLines, NewLines, Result, SourceLines, SrtLines};
+use crate::{ByteLines, ConversionLines, NewLines, Result, SourceLines, SrtLines};
 use it::{BodyState, CurrentState, TransIterState};
 use std::{
     fs::File,
@@ -30,3 +30,5 @@ pub(crate) struct RegularVttLines<'a, T: BufRead> {
 pub fn open_file<'a, P: AsRef<Path>>(path: P) -> Result<VttLines<'a, BufReader<File>>> {
     VttLines::open_file(path)
 }
+
+impl<'a, T: BufRead> ConversionLines<'a, T> for VttLines<'a, T> {}
