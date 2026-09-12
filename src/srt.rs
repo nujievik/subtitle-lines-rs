@@ -6,7 +6,7 @@ pub(crate) mod it;
 mod new;
 mod write;
 
-use crate::{ByteLines, ConversionLines, NewLines, Result, SourceLines};
+use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines};
 use it::{IterState, TransIterState};
 use std::{
     fs::File,

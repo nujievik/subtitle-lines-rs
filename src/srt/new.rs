@@ -1,9 +1,9 @@
-use super::{IterState, NewLines, RegularSrtLines, SrtLines, TransIterState};
+use super::{FromBytes, IterState, RegularSrtLines, SrtLines, TransIterState};
 use crate::{AssLines, ByteLines, SourceLines, VttLines};
 use std::io::BufRead;
 
-impl<'a, T: BufRead> NewLines<'a> for SrtLines<'a, T> {}
-impl<'a, T: BufRead> NewLines<'a> for RegularSrtLines<'a, T> {}
+impl<'a, T: BufRead> FromBytes<'a> for SrtLines<'a, T> {}
+impl<'a, T: BufRead> FromBytes<'a> for RegularSrtLines<'a, T> {}
 
 impl<'a, T: BufRead> From<ByteLines<'a, T>> for SrtLines<'a, T> {
     fn from(byte_lines: ByteLines<'a, T>) -> SrtLines<'a, T> {

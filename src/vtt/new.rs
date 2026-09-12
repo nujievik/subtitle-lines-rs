@@ -1,11 +1,11 @@
 use super::{
     BodyState, ByteLines, CurrentState, RegularVttLines, SrtLines, TransIterState, VttLines,
 };
-use crate::{AssLines, NewLines, SourceLines};
+use crate::{AssLines, FromBytes, SourceLines};
 use std::io::BufRead;
 
-impl<'a, T: BufRead> NewLines<'a> for VttLines<'a, T> {}
-impl<'a, T: BufRead> NewLines<'a> for RegularVttLines<'a, T> {}
+impl<'a, T: BufRead> FromBytes<'a> for VttLines<'a, T> {}
+impl<'a, T: BufRead> FromBytes<'a> for RegularVttLines<'a, T> {}
 
 impl<'a, T: BufRead> From<ByteLines<'a, T>> for VttLines<'a, T> {
     fn from(byte_lines: ByteLines<'a, T>) -> Self {

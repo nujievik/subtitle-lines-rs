@@ -41,7 +41,9 @@ pub trait StreamingIterator {
     }
 }
 
-pub trait NewLines<'a> {
+/// A trait for constructs a subtitle lines from **regular** bytes.
+/// If conversion is required, use [`ConversionLines`] after construct.
+pub trait FromBytes<'a> {
     fn from_bytes<B>(bytes: &'a B) -> Self
     where
         Self: From<ByteLines<'a, Empty>>,
