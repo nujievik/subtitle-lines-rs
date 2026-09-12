@@ -76,6 +76,7 @@ pub trait FromBytes<'a> {
     }
 }
 
+// TODO: rename to ConvertLines.
 pub trait ConversionLines<'a, T: BufRead> {
     fn from_ass(ass: AssLines<'a, T>) -> Self
     where
@@ -153,7 +154,6 @@ pub trait WriteLines {
     where
         W: Write + ?Sized,
     {
-        static DEFAULT_OPTIONS: WriteOptions = WriteOptions::new();
-        self.write_to_writer_with(writer, &DEFAULT_OPTIONS)
+        self.write_to_writer_with(writer, &crate::DEFAULT_OPTIONS)
     }
 }

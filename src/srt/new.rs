@@ -1,6 +1,12 @@
 use super::{FromBytes, IterState, RegularSrtLines, SrtLines, TransIterState};
-use crate::{AssLines, ByteLines, SourceLines, VttLines};
+use crate::{AssLines, ByteLines, SourceLines, SubtitleLines, VttLines};
 use std::io::BufRead;
+
+impl<'a, T: BufRead> From<SubtitleLines<'a, T>> for SrtLines<'a, T> {
+    fn from(sub_lines: SubtitleLines<'a, T>) -> SrtLines<'a, T> {
+        Self::new_with_source(sub_lines.source)
+    }
+}
 
 impl<'a, T: BufRead> FromBytes<'a> for SrtLines<'a, T> {}
 impl<'a, T: BufRead> FromBytes<'a> for RegularSrtLines<'a, T> {}
