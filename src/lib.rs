@@ -21,6 +21,7 @@ mod byte_helpers;
 mod byte_lines;
 mod error;
 mod options;
+mod subtitle_lines;
 mod time;
 mod traits;
 
@@ -29,6 +30,7 @@ pub use byte_lines::ByteLines;
 pub use error::Error;
 pub use options::WriteOptions;
 pub use srt::SrtLines;
+pub use subtitle_lines::{SubtitleLines, open_file};
 pub use time::Time;
 pub use traits::{ConversionLines, FromBytes, StreamingIterator, WriteLines};
 pub use vtt::VttLines;
@@ -40,6 +42,7 @@ use srt::{RegularSrtLines, line::SrtLine};
 use vtt::{RegularVttLines, line::VttLine};
 
 const BOM: &[u8] = "\u{feff}".as_bytes();
+static DEFAULT_OPTIONS: WriteOptions = WriteOptions::new();
 
 #[derive(Debug)]
 enum SourceLines<'a, T: std::io::BufRead> {

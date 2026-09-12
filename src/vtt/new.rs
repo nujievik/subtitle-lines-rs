@@ -1,8 +1,14 @@
 use super::{
     BodyState, ByteLines, CurrentState, RegularVttLines, SrtLines, TransIterState, VttLines,
 };
-use crate::{AssLines, FromBytes, SourceLines};
+use crate::{AssLines, FromBytes, SourceLines, SubtitleLines};
 use std::io::BufRead;
+
+impl<'a, T: BufRead> From<SubtitleLines<'a, T>> for VttLines<'a, T> {
+    fn from(sub_lines: SubtitleLines<'a, T>) -> VttLines<'a, T> {
+        Self::new_with_source(sub_lines.source)
+    }
+}
 
 impl<'a, T: BufRead> FromBytes<'a> for VttLines<'a, T> {}
 impl<'a, T: BufRead> FromBytes<'a> for RegularVttLines<'a, T> {}
