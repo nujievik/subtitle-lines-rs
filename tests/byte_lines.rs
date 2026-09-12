@@ -1,7 +1,7 @@
 mod common;
 
 use common::*;
-use player_subtitles::*;
+use subtitle_lines::*;
 
 macro_rules! iter_slice_test {
     ($ty:ident, $fn:ident, $istr:expr, $lines:expr) => {

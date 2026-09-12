@@ -3,7 +3,7 @@ mod common;
 mod write;
 
 use common::*;
-use player_subtitles::{vtt::line::*, *};
+use subtitle_lines::{vtt::line::*, *};
 
 const SIMPLE: &[u8] = br"WEBVTT
 

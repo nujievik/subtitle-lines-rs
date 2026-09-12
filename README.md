@@ -1,31 +1,19 @@
-# player-subtitles
+# subtitle-lines
 
-A subtitle library focused on player-compatible subtitle files.
+Rust library to parse and convert ASS/SSA, SRT, and WebVTT subtitles
+directly from bytes, without decoding to UTF-8 or loading the entire
+subtitle file into memory.
 
-Unlike many other crates player-subtitles works with raw bytes, 
-correctly processing an ASCII-compatible encoding subtitles (UTF-8,
-Windows-1251, etc.).
+Unlike many other Rust crates subtitle-lines correctly processing an
+ASCII-compatible encoding subtitles (UTF-8, Windows-1251, etc.)
+without costs to decode bytes.
 
-[![Tests](https://github.com/nujievik/player-subtitles-rs/actions/workflows/tests.yml/badge.svg)](
-https://github.com/nujievik/player-subtitles-rs/actions/workflows/tests.yml)
+[![Tests](https://github.com/nujievik/subtitle-lines-rs/actions/workflows/tests.yml/badge.svg)](
+https://github.com/nujievik/subtitle-lines-rs/actions/workflows/tests.yml)
 
-## Format supported
-- SRT (SubRip)
+## Supported Formats
+- ASS/SSA
+- SRT
+- VTT
 
 TODO: Add support for other formats.
-
-## Constructors
-The library provides fallible and infallible constructors. This allows
-not only ensures default normalization, but implements
-user-normalization also. See documentation for details.
-
-## Features
-- Allows writing files byte-for-byte identical to the original
-- Borrowed constructors from a bytes or string and owned constructors
-from a file
-- Clone-on-write architecture with minimal allocations
-- Default standardization method
-- Fallible and infallible constructors
-- Line-by-line subtitle representation.
-- Reading from and writing to files
-- Support for ASCII-compatible encodings (UTF-8, Windows-1251, etc.)

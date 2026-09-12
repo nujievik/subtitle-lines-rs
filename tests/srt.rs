@@ -3,7 +3,7 @@ mod common;
 mod write;
 
 use common::*;
-use player_subtitles::{srt::line::SrtLine, *};
+use subtitle_lines::{srt::line::SrtLine, *};
 
 const SIMPLE: &[u8] = br"1
 00:00:05,000 --> 00:00:10,000

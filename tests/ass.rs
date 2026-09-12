@@ -3,8 +3,8 @@ mod common;
 mod write;
 
 use common::*;
-use player_subtitles::{ass::line::*, *};
 use std::io::BufRead;
+use subtitle_lines::{ass::line::*, *};
 
 const SIMPLE: &[u8] = br"[Script Info]
 ScriptType: v4.00+
