@@ -37,7 +37,7 @@ bytes_field_struct!(Metadata);
 bytes_field_struct!(Text);
 
 impl<'a> VttLine<'a> {
-    pub(crate) fn as_bytes(&self) -> &[u8] {
+    pub fn as_bytes(&self) -> &[u8] {
         match self {
             Self::VttFileMark(VttFileMark { bytes }) => bytes,
             Self::Blank => b"",
@@ -53,6 +53,22 @@ impl<'a> VttLine<'a> {
             Self::Unrecognized(bytes) => bytes,
         }
     }
+
+    /// Gets subtitle start time if line is [`VttLine::TimeRangeAndStyle`].
+    pub fn get_start(&self) -> Option<Time> {
+        match self {
+            VttLine::TimeRangeAndStyle(x) => Some(x.start()),
+            _ => None,
+        }
+    }
+
+    /// Gets subtitle end time if line is [`VttLine::TimeRangeAndStyle`].
+    pub fn get_end(&self) -> Option<Time> {
+        match self {
+            VttLine::TimeRangeAndStyle(x) => Some(x.end()),
+            _ => None,
+        }
+    }
 }
 
 impl<'a> Comment<'a> {
@@ -66,6 +82,14 @@ impl<'a> Comment<'a> {
 }
 
 impl<'a> TimeRangeAndStyle<'a> {
+    pub fn start(&self) -> Time {
+        self.start
+    }
+
+    pub fn end(&self) -> Time {
+        self.end
+    }
+
     pub(crate) fn get_new(bytes: &'a [u8]) -> Option<Self> {
         let mut words = byte_helpers::words(bytes);
         if let (Some(start), Some(b"-->"), Some(end)) = (words.next(), words.next(), words.next()) {

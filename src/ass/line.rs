@@ -11,6 +11,8 @@ pub use event::{
 pub use info::{ScriptInfo, ScriptType, Title, WrapStyle};
 pub use mark::SectionMark;
 
+use crate::Time;
+
 #[derive(Debug, PartialEq)]
 pub enum AssLine<'a> {
     Blank,
@@ -33,6 +35,22 @@ impl<'a> AssLine<'a> {
             Self::EventFormat(x) => x.as_bytes(),
             Self::Event(x) => x.bytes,
             Self::Unrecognized(bytes) => bytes,
+        }
+    }
+
+    /// Gets subtitle start time if line is [`AssLine::Event`].
+    pub fn get_start(&self) -> Option<Time> {
+        match self {
+            AssLine::Event(x) => Some(x.start()),
+            _ => None,
+        }
+    }
+
+    /// Gets subtitle end time if line is [`AssLine::Event`].
+    pub fn get_end(&self) -> Option<Time> {
+        match self {
+            AssLine::Event(x) => Some(x.end()),
+            _ => None,
         }
     }
 }

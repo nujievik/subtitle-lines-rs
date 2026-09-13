@@ -34,4 +34,12 @@ impl<'a> Event<'a> {
     pub fn as_bytes(&self) -> &[u8] {
         self.bytes
     }
+
+    pub fn start(&self) -> Time {
+        self.start
+    }
+
+    pub fn end(&self) -> Time {
+        self.end
+    }
 }
