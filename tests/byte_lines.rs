@@ -1,6 +1,10 @@
 mod common;
 
 use common::*;
+use std::{
+    fs,
+    io::{BufWriter, Write},
+};
 use subtitle_lines::*;
 
 macro_rules! iter_slice_test {
@@ -31,4 +35,19 @@ fn iter_file() {
         assert_eq!(blines.next().unwrap(), s.as_bytes());
     }
     assert!(blines.next().is_none());
+}
+
+#[test]
+fn read_write_big_file() {
+    let dest = temp("big.ass");
+    let mut blines = ByteLines::open_file(&data("big.ass")).unwrap();
+
+    let f = fs::File::create(&dest).unwrap();
+    let mut writer = BufWriter::new(f);
+
+    while let Some(l) = blines.next() {
+        writer.write(l).unwrap();
+        writer.write(b"\n").unwrap();
+    }
+    String::from_utf8(fs::read(&dest).unwrap()).unwrap();
 }

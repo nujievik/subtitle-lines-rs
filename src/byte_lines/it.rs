@@ -9,68 +9,78 @@ impl<T: BufRead> crate::StreamingIterator for ByteLines<'_, T> {
 
     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {
         match &mut self.ty {
-            ByteLinesTy::ByteSlice(bytes) => get_slice_line(bytes, &mut self.pos),
+            ByteLinesTy::ByteSlice(bytes) => get_slice_line(bytes, &mut self.pos).map(|(bs, _)| bs),
             ByteLinesTy::BufReader(reader) => {
                 reader.consume(self.pos);
                 self.pos = 0;
 
-                let internal_buf = reader.fill_buf().ok()?;
-                let line = get_slice_line(internal_buf, &mut self.pos)?;
-                let line_len = line.len();
+                let reader_ptr = reader as *mut T;
+                let internal_buf = unsafe { (*reader_ptr).fill_buf().ok()? };
 
-                if line < internal_buf || line_len == 0 {
-                    let internal_buf = reader.fill_buf().ok()?;
-                    return Some(&internal_buf[..line_len]);
+                let (line, complete) = get_slice_line(internal_buf, &mut self.pos)?;
+
+                // do not fill self.buf if line <= reader internal buf
+                if complete {
+                    return Some(line);
                 }
 
                 self.buf.clear();
+                self.buf.extend_from_slice(line);
+
                 loop {
+                    reader.consume(self.pos);
                     self.pos = 0;
+
                     let internal_buf = reader.fill_buf().ok()?;
 
-                    let line = match get_slice_line(internal_buf, &mut self.pos) {
-                        Some(l) => l,
-                        None => break,
-                    };
+                    if internal_buf.is_empty() {
+                        return if self.buf.is_empty() {
+                            None
+                        } else {
+                            Some(&self.buf)
+                        };
+                    }
+
+                    let (line, complete) = get_slice_line(internal_buf, &mut self.pos)?;
                     self.buf.extend_from_slice(line);
 
-                    let is_end = line < internal_buf || line.len() == 0;
-                    reader.consume(self.pos);
-
-                    if is_end {
-                        break;
+                    if complete {
+                        return Some(&self.buf);
                     }
                 }
-
-                Some(&self.buf)
             }
         }
     }
 }
 
-fn get_slice_line<'a>(data: &'a [u8], pos: &mut usize) -> Option<&'a [u8]> {
+fn get_slice_line<'a>(data: &'a [u8], pos: &mut usize) -> Option<(&'a [u8], bool)> {
     if *pos >= data.len() {
         return None;
     }
 
     let start = *pos;
-    let mut newline_is_r = false;
+
     while *pos < data.len() {
         match data[*pos] {
             b'\r' => {
-                newline_is_r = true;
-                break;
+                let end = *pos;
+                *pos += 1;
+
+                if data.get(*pos).is_some_and(|b| matches!(b, b'\n')) {
+                    *pos += 1;
+                }
+
+                return Some((&data[start..end], true));
             }
-            b'\n' => break,
+            b'\n' => {
+                let end = *pos;
+                *pos += 1;
+
+                return Some((&data[start..end], true));
+            }
             _ => *pos += 1,
         }
     }
-    let end = *pos;
 
-    *pos += 1;
-    if newline_is_r && data.get(*pos).is_some_and(|b| matches!(b, b'\n')) {
-        *pos += 1;
-    }
-
-    Some(&data[start..end])
+    Some((&data[start..], false))
 }

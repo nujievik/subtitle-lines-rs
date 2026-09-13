@@ -1,6 +1,6 @@
 [package]
 name = "subtitle-lines"
-version = "0.2.2"
+version = "0.2.3"
 description = "Streaming, byte-oriented subtitle parsing and conversion library."
 authors = ["Ivan Reutov <nujievik@gmail.com>"]
 edition = "2024"
