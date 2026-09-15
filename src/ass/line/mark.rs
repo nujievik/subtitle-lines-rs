@@ -1,35 +1,57 @@
+#[derive(Clone, Debug, PartialEq)]
+pub struct SectionMark<'a> {
+    pub(crate) bytes: &'a [u8],
+    pub(crate) id: SectionMarkId,
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum SectionMark {
+pub enum SectionMarkId {
     ScriptInfo,
     V4Styles,
     V4StylesPlus,
     Events,
     Fonts,
     Graphics,
+    Unrecognized,
 }
 
-impl SectionMark {
+impl<'a> SectionMark<'a> {
     pub fn as_bytes(&self) -> &[u8] {
-        match self {
-            Self::ScriptInfo => b"[Script Info]",
-            Self::V4Styles => b"[v4 Styles]",
-            Self::V4StylesPlus => b"[v4 Styles+]",
-            Self::Events => b"[Events]",
-            Self::Fonts => b"[Fonts]",
-            Self::Graphics => b"[Graphics]",
+        if self.bytes.is_empty() {
+            self.id.as_bytes()
+        } else {
+            self.bytes
         }
     }
 
-    pub(crate) fn get_from_bytes(bs: &[u8]) -> Option<Self> {
-        let mark = match bs {
-            b"v4 Styles" => SectionMark::V4Styles,
-            b"v4 Styles+" | b"V4+ Styles" => SectionMark::V4StylesPlus,
-            b"Events" => SectionMark::Events,
-            b"Fonts" => SectionMark::Fonts,
-            b"Graphics" => SectionMark::Graphics,
-            b"Script Info" => SectionMark::ScriptInfo,
-            _ => return None,
+    pub(crate) fn get_new(bytes: &'a [u8]) -> Option<SectionMark<'a>> {
+        if !matches!(bytes[0], b'[') || !matches!(bytes.last().unwrap(), b']') {
+            return None;
+        }
+
+        let id = match &bytes[1..bytes.len() - 1] {
+            b"Script Info" => SectionMarkId::ScriptInfo,
+            b"v4 Styles" => SectionMarkId::V4Styles,
+            b"v4 Styles+" | b"V4+ Styles" => SectionMarkId::V4StylesPlus,
+            b"Events" => SectionMarkId::Events,
+            b"Fonts" => SectionMarkId::Fonts,
+            b"Graphics" => SectionMarkId::Graphics,
+            _ => SectionMarkId::Unrecognized,
         };
-        Some(mark)
+        Some(Self { bytes, id })
+    }
+}
+
+impl SectionMarkId {
+    const fn as_bytes(&self) -> &'static [u8] {
+        match self {
+            SectionMarkId::ScriptInfo => b"[Script Info]",
+            SectionMarkId::V4Styles => b"[v4 Styles]",
+            SectionMarkId::V4StylesPlus => b"[v4 Styles+]",
+            SectionMarkId::Events => b"[Events]",
+            SectionMarkId::Fonts => b"[Fonts]",
+            SectionMarkId::Graphics => b"[Fonts]",
+            SectionMarkId::Unrecognized => b"",
+        }
     }
 }

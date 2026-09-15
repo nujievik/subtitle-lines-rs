@@ -1,7 +1,7 @@
 mod comment;
 mod event;
 mod info;
-mod mark;
+pub(crate) mod mark;
 
 pub use comment::Comment;
 pub use event::{
@@ -12,11 +12,12 @@ pub use info::{ScriptInfo, ScriptType, Title, WrapStyle};
 pub use mark::SectionMark;
 
 use crate::Time;
+use mark::SectionMarkId;
 
 #[derive(Debug, PartialEq)]
 pub enum AssLine<'a> {
     Blank,
-    SectionMark(SectionMark),
+    SectionMark(SectionMark<'a>),
     Comment(Comment<'a>),
     ScriptInfo(ScriptInfo<'a>),
     EventFormat(EventFormat<'a>),
@@ -52,5 +53,11 @@ impl<'a> AssLine<'a> {
             AssLine::Event(x) => Some(x.end()),
             _ => None,
         }
+    }
+}
+
+impl<'a> AssLine<'a> {
+    pub(crate) fn new_mark(bytes: &'a [u8], id: SectionMarkId) -> AssLine<'a> {
+        AssLine::SectionMark(SectionMark { bytes, id })
     }
 }

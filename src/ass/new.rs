@@ -1,4 +1,4 @@
-use super::{AssLines, IterState, RegularAssLines, TransIterState};
+use super::{AssLines, IterState, RegularAssLines, SectionMarkId, TransIterState};
 use crate::{ByteLines, FromBytes, SourceLines, SrtLines, SubtitleLines, VttLines};
 use std::io::BufRead;
 
@@ -21,6 +21,7 @@ impl<'a, T: BufRead> From<ByteLines<'a, T>> for RegularAssLines<'a, T> {
         Self {
             lines,
             state: IterState::Init,
+            section_state: SectionMarkId::ScriptInfo,
         }
     }
 }

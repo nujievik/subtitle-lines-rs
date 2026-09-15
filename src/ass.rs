@@ -6,6 +6,7 @@ mod write;
 
 use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines};
 use it::{IterState, TransIterState};
+use line::mark::SectionMarkId;
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -23,6 +24,7 @@ pub struct AssLines<'a, T: BufRead> {
 pub(crate) struct RegularAssLines<'a, T: BufRead> {
     pub(crate) lines: ByteLines<'a, T>,
     pub(crate) state: IterState,
+    section_state: SectionMarkId,
 }
 
 pub fn open_file<'a, P: AsRef<Path>>(path: P) -> Result<AssLines<'a, BufReader<File>>> {

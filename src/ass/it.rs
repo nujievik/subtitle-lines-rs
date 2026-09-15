@@ -2,7 +2,7 @@ use super::line::{
     AssLine, Comment, Event, EventFormat, EventFormatPositions, ScriptInfo, ScriptType,
     SectionMark, WrapStyle,
 };
-use super::{AssLines, RegularAssLines};
+use super::{AssLines, RegularAssLines, SectionMarkId};
 use crate::{
     ByteLines, RegularSrtLines, RegularVttLines, SourceLines, SrtLine, StreamingIterator, Time,
     VttLine, byte_helpers,
@@ -31,18 +31,15 @@ impl<T: BufRead> StreamingIterator for RegularAssLines<'_, T> {
         Self: 'a;
 
     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {
-        next_regular(&mut self.lines, &mut self.state)
+        next_regular(&mut self.lines, &mut self.state, &mut self.section_state)
     }
 }
 
 #[derive(Debug)]
 pub enum IterState {
     Init,
-    ScriptInfo,
-    Blank,
-    SectionMark(SectionMark),
+    OutsideEvents,
     Events(EventFormatPositions),
-    Unrecognized,
 }
 
 #[derive(Debug)]
@@ -68,25 +65,18 @@ pub enum TransIterStateEvents {
 fn next_regular<'a, T: BufRead>(
     blines: &'a mut ByteLines<'_, T>,
     state: &mut IterState,
+    section_state: &mut SectionMarkId,
 ) -> Option<AssLine<'a>> {
     let line = {
         let mut line = blines.next()?;
-
         if let IterState::Init = state {
-            *state = IterState::ScriptInfo;
+            *state = IterState::OutsideEvents;
             line = byte_helpers::trim_bom(line);
-            line = byte_helpers::trim(line);
-            if line == b"[Script Info]" {
-                return Some(AssLine::SectionMark(SectionMark::ScriptInfo));
-            }
-        } else {
-            line = byte_helpers::trim(line);
         }
-        line
+        byte_helpers::trim(line)
     };
 
     if line.is_empty() {
-        *state = IterState::Blank;
         return Some(AssLine::Blank);
     }
 
@@ -94,54 +84,36 @@ fn next_regular<'a, T: BufRead>(
         return Some(AssLine::Comment(comment));
     }
 
-    if line[0] == b'[' && *line.last().unwrap() == b']' {
-        return Some(
-            if let Some(mark) = SectionMark::get_from_bytes(&line[1..line.len() - 1]) {
-                *state = IterState::SectionMark(mark);
-                AssLine::SectionMark(mark)
-            } else {
-                *state = IterState::Unrecognized;
-                AssLine::Unrecognized(line)
-            },
-        );
+    if let Some(mark) = SectionMark::get_new(line) {
+        *state = IterState::OutsideEvents;
+        *section_state = mark.id;
+        return Some(AssLine::SectionMark(mark));
     }
 
-    if let IterState::Unrecognized = state {
-        return Some(AssLine::Unrecognized(line));
-    }
-
-    if let IterState::ScriptInfo | IterState::SectionMark(SectionMark::ScriptInfo) = state {
-        return Some(if let Some(info) = ScriptInfo::get_new(line) {
-            *state = IterState::ScriptInfo;
-            AssLine::ScriptInfo(info)
-        } else {
-            *state = IterState::ScriptInfo;
-            AssLine::Unrecognized(line)
+    if let SectionMarkId::ScriptInfo = section_state {
+        return Some(match ScriptInfo::get_new(line) {
+            Some(info) => AssLine::ScriptInfo(info),
+            None => AssLine::Unrecognized(line),
         });
     }
 
-    if let IterState::SectionMark(mark) = state {
-        if let SectionMark::Events = mark {
-            return Some(if let Some(format) = EventFormat::get_new(line) {
-                *state = IterState::Events(*format.positions());
-                AssLine::EventFormat(format)
-            } else {
-                *state = IterState::Unrecognized;
-                AssLine::Unrecognized(line)
-            });
+    if let SectionMarkId::Events = section_state {
+        match state {
+            IterState::OutsideEvents => {
+                if let Some(format) = EventFormat::get_new(line) {
+                    *state = IterState::Events(*format.positions());
+                    return Some(AssLine::EventFormat(format));
+                }
+            }
+            IterState::Events(format_positions) => {
+                if let Some(event) = Event::get_new(line, format_positions) {
+                    return Some(AssLine::Event(event));
+                }
+            }
+            _ => (),
         }
     }
 
-    if let IterState::Events(format) = state {
-        return Some(if let Some(event) = Event::get_new(line, format) {
-            AssLine::Event(event)
-        } else {
-            *state = IterState::Unrecognized;
-            AssLine::Unrecognized(line)
-        });
-    }
-
-    *state = IterState::Unrecognized;
     Some(AssLine::Unrecognized(line))
 }
 
@@ -153,7 +125,7 @@ fn next_from_srt<'a, T: BufRead>(
     let line = match state {
         TransIterState::Init => {
             *state = TransIterState::Header(TransIterStateHeader::ScriptType);
-            AssLine::SectionMark(SectionMark::ScriptInfo)
+            AssLine::new_mark(&[], SectionMarkId::ScriptInfo)
         }
         TransIterState::Header(TransIterStateHeader::ScriptType) => {
             *state = TransIterState::Header(TransIterStateHeader::WrapStyle);
@@ -173,7 +145,7 @@ fn next_from_srt<'a, T: BufRead>(
         }
         TransIterState::Events(TransIterStateEvents::Mark) => {
             *state = TransIterState::Events(TransIterStateEvents::Format);
-            AssLine::SectionMark(SectionMark::Events)
+            AssLine::new_mark(&[], SectionMarkId::Events)
         }
         TransIterState::Events(TransIterStateEvents::Format) => {
             *state = TransIterState::Events(TransIterStateEvents::AfterFormat);
@@ -249,7 +221,7 @@ fn next_from_vtt<'a, T: BufRead>(
     let line = match state {
         TransIterState::Init => {
             *state = TransIterState::Header(TransIterStateHeader::ScriptType);
-            AssLine::SectionMark(SectionMark::ScriptInfo)
+            AssLine::new_mark(&[], SectionMarkId::ScriptInfo)
         }
         TransIterState::Header(TransIterStateHeader::ScriptType) => {
             *state = TransIterState::Header(TransIterStateHeader::WrapStyle);
@@ -269,7 +241,7 @@ fn next_from_vtt<'a, T: BufRead>(
         }
         TransIterState::Events(TransIterStateEvents::Mark) => {
             *state = TransIterState::Events(TransIterStateEvents::Format);
-            AssLine::SectionMark(SectionMark::Events)
+            AssLine::new_mark(&[], SectionMarkId::Events)
         }
         TransIterState::Events(TransIterStateEvents::Format) => {
             *state = TransIterState::Events(TransIterStateEvents::AfterFormat);

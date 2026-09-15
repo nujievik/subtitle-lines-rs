@@ -8,15 +8,15 @@ impl<'a> Event<'a> {
 
         let mut parts = [b"".as_slice(); 9];
         for i in 0..9 {
-            let pos = remainder.iter().position(|&b| b == b',')?;
+            let pos = remainder.iter().position(|b| matches!(b, b','))?;
             parts[i] = &remainder[..pos];
-            remainder = if remainder.len() > pos + 1 {
-                byte_helpers::trim_start(&remainder[pos + 1..])
-            } else {
+
+            if remainder.len() > pos + 1 {
+                remainder = &remainder[pos + 1..];
+            } else if !matches!(i, 8) {
                 return None;
             }
         }
-        parts[0] = byte_helpers::trim_start(parts[0]);
 
         Some(Self {
             bytes: line,
@@ -58,7 +58,7 @@ fn get_event_type_and_trim_line<'a>(line: &'a [u8]) -> Option<(EventType<'a>, &'
         match line[pos] {
             b',' => return None,
             b':' => {
-                if !(pos + 1 < line.len()) {
+                if !(pos + 2 < line.len()) {
                     return None;
                 }
 
@@ -69,10 +69,10 @@ fn get_event_type_and_trim_line<'a>(line: &'a [u8]) -> Option<(EventType<'a>, &'
                     b"Sound" => EventType::Sound,
                     b"Movie" => EventType::Movie,
                     b"Command" => EventType::Command,
-                    _ => EventType::Unrecognized(&line[..=pos]),
+                    _ => EventType::Unrecognized(&line[..pos]),
                 };
 
-                return Some((ty, &line[pos + 1..]));
+                return Some((ty, &line[pos + 2..]));
             }
             _ => pos += 1,
         }
@@ -85,11 +85,12 @@ fn get_time(data: &[u8]) -> Option<Time> {
     let data = hhs_it.next().unwrap();
     let mut it = data.split(|b| matches!(b, b':')).rev();
 
-    let hundredths = if let Some(x) = it.next() {
+    let hundredths = if let Some(x) = hhs_it.next() {
         x
     } else {
         it.next()?
     };
+
     let secs = it.next()?;
     let mins = it.next()?;
     let hours = it.next()?;

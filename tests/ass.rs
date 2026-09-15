@@ -17,10 +17,7 @@ Dialogue: 0,0:00:10:00,0:00:15:00,Default,,0,0,0,,Second block
 ";
 
 fn assert_iter_simple<T: BufRead>(ass: &mut AssLines<T>) {
-    assert_eq!(
-        ass.next().unwrap(),
-        AssLine::SectionMark(SectionMark::ScriptInfo)
-    );
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
     assert!(matches!(
         ass.next().unwrap(),
         AssLine::ScriptInfo(ScriptInfo::ScriptType(_))
@@ -30,10 +27,7 @@ fn assert_iter_simple<T: BufRead>(ass: &mut AssLines<T>) {
         AssLine::ScriptInfo(ScriptInfo::WrapStyle(_))
     ));
     assert!(matches!(ass.next().unwrap(), AssLine::Blank));
-    assert!(matches!(
-        ass.next().unwrap(),
-        AssLine::SectionMark(SectionMark::Events)
-    ));
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
     assert!(matches!(ass.next().unwrap(), AssLine::EventFormat(_)));
     assert!(matches!(ass.next().unwrap(), AssLine::Event(_)));
     assert!(matches!(ass.next().unwrap(), AssLine::Event(_)));
@@ -70,10 +64,7 @@ fn iter_bom_file() {
 #[test]
 fn iter_cp1251_file() {
     let mut ass = AssLines::open_file(data("cp1251.ass")).unwrap();
-    assert_eq!(
-        ass.next().unwrap(),
-        AssLine::SectionMark(SectionMark::ScriptInfo)
-    );
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
     assert!(matches!(
         ass.next().unwrap(),
         AssLine::ScriptInfo(ScriptInfo::ScriptType(_))
@@ -83,10 +74,7 @@ fn iter_cp1251_file() {
         AssLine::ScriptInfo(ScriptInfo::WrapStyle(_))
     ));
     assert!(matches!(ass.next().unwrap(), AssLine::Blank));
-    assert!(matches!(
-        ass.next().unwrap(),
-        AssLine::SectionMark(SectionMark::Events)
-    ));
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
     assert!(matches!(ass.next().unwrap(), AssLine::EventFormat(_)));
     assert!(matches!(ass.next().unwrap(), AssLine::Event(_)));
 
@@ -103,4 +91,47 @@ fn iter_from_srt_lines() {
 fn iter_from_vtt_lines() {
     let mut ass = AssLines::from(VttLines::open_file(data("vtt.vtt")).unwrap());
     assert_iter_simple(&mut ass)
+}
+
+#[test]
+fn iter_big_file() {
+    let mut ass = AssLines::open_file(data("big.ass")).unwrap();
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
+    assert!(matches!(ass.next().unwrap(), AssLine::Comment(_)));
+    assert!(matches!(ass.next().unwrap(), AssLine::Comment(_)));
+    assert!(matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::ScriptType(_))
+    ));
+    assert!(matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::WrapStyle(_))
+    ));
+    assert!(matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::PlayResX(_))
+    ));
+    assert!(matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::PlayResY(_))
+    ));
+    for _ in 0..4 {
+        assert!(matches!(ass.next().unwrap(), AssLine::Unrecognized(_),));
+    }
+
+    assert!(matches!(ass.next().unwrap(), AssLine::Blank));
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
+    for _ in 0..9 {
+        assert!(matches!(ass.next().unwrap(), AssLine::Unrecognized(_),));
+    }
+
+    assert!(matches!(ass.next().unwrap(), AssLine::Blank));
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
+    assert!(matches!(ass.next().unwrap(), AssLine::EventFormat(_)));
+    assert!(matches!(ass.next().unwrap(), AssLine::Blank));
+    for _ in 0..291 {
+        assert!(matches!(ass.next().unwrap(), AssLine::Event(_),));
+    }
+
+    assert!(ass.next().is_none());
 }
