@@ -1,11 +1,12 @@
 [package]
 name = "subtitle-lines"
-version = "0.2.3"
+version = "0.3.0"
 description = "Streaming, byte-oriented subtitle parsing and conversion library."
 authors = ["Ivan Reutov <nujievik@gmail.com>"]
 edition = "2024"
 rust-version = "1.98"
 repository = "https://github.com/nujievik/subtitle-lines-rs"
 license = "MIT OR Apache-2.0"
+include = ["README.md", "src/**"]
 
 [dependencies]
