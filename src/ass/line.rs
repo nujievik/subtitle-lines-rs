@@ -15,6 +15,7 @@ use crate::Time;
 use mark::SectionMarkId;
 
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum AssLine<'a> {
     Blank,
     SectionMark(SectionMark<'a>),

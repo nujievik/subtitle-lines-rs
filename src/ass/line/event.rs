@@ -7,6 +7,7 @@ use ty::EventType;
 
 #[derive(Debug, PartialEq)]
 pub struct Event<'a> {
+    // raw bytes
     pub(crate) bytes: &'a [u8],
     pub(crate) ty: EventType<'a>,
     // Subtitles having different layer number will be ignored during the collusion detection.
@@ -35,10 +36,12 @@ impl<'a> Event<'a> {
         self.bytes
     }
 
+    #[inline(always)]
     pub fn start(&self) -> Time {
         self.start
     }
 
+    #[inline(always)]
     pub fn end(&self) -> Time {
         self.end
     }

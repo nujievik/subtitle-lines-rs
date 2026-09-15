@@ -1,4 +1,5 @@
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum ScriptInfo<'a> {
     Title(Title<'a>),
     OriginalScript(OriginalScript<'a>),

@@ -1,6 +1,7 @@
 use crate::{Time, byte_helpers};
 
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum VttLine<'a> {
     VttFileMark(VttFileMark<'a>),
     Blank,
@@ -25,8 +26,8 @@ pub struct Comment<'a> {
 #[derive(Debug, PartialEq)]
 pub struct TimeRangeAndStyle<'a> {
     pub(crate) bytes: &'a [u8],
-    pub start: Time,
-    pub end: Time,
+    pub(crate) start: Time,
+    pub(crate) end: Time,
 }
 
 bytes_field_struct!(VttFileMark);
@@ -82,10 +83,12 @@ impl<'a> Comment<'a> {
 }
 
 impl<'a> TimeRangeAndStyle<'a> {
+    #[inline(always)]
     pub fn start(&self) -> Time {
         self.start
     }
 
+    #[inline(always)]
     pub fn end(&self) -> Time {
         self.end
     }
