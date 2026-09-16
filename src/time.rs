@@ -1,4 +1,6 @@
 pub(crate) mod bufs;
+mod into;
+mod new;
 
 use crate::{Error, Result};
 use std::{
@@ -26,53 +28,62 @@ pub struct Time {
 }
 
 impl Time {
-    /// Tries construct a new [`Time`].
+    /// The zero time.
     ///
-    /// # Errors
+    /// # Examples
+    /// ```
+    /// use subtitle_lines::Time;
     ///
-    /// Returns an error in the next cases:
-    /// - minutes >= 60
-    /// - seconds >= 60
-    /// - milliseconds >= 1000
-    pub const fn new(hours: u16, mins: u8, secs: u8, millis: u16) -> Result<Time> {
-        if mins >= SIXTY {
-            Err(Error::ValueValidation("minutes must be < 60"))
-        } else if secs >= SIXTY {
-            Err(Error::ValueValidation("seconds must be < 60"))
-        } else if millis >= THOUSAND {
-            Err(Error::ValueValidation("milliseconds must be < 1000"))
-        } else {
-            Ok(Self::new_unchecked(hours, mins, secs, millis))
-        }
-    }
+    /// let time = Time::ZERO;
+    /// assert!(time.is_zero());
+    /// assert_eq!(time.as_millis(), 0);
+    /// ```
+    pub const ZERO: Time = Time::new_unchecked(0, 0, 0, 0);
 
-    /// Constructs a new [`Time`] without checks. User must ensures:
-    /// - minutes < 60
-    /// - seconds < 60
-    /// - milliseconds < 1000
-    pub const fn new_unchecked(hours: u16, mins: u8, secs: u8, millis: u16) -> Time {
-        Self {
-            hours,
-            mins,
-            secs,
-            millis,
-        }
-    }
-}
+    /// The minimum time. This is [`ZERO`](Time::ZERO) equivalent.
+    ///
+    /// # Examples
+    /// ```
+    /// use subtitle_lines::Time;
+    ///
+    /// assert_eq!(Time::MIN, Time::ZERO);
+    /// ```
+    pub const MIN: Time = Time::ZERO;
 
-impl From<Duration> for Time {
-    fn from(dur: Duration) -> Time {
-        let millis = dur.subsec_millis() as u16;
-        let total_secs = dur.as_secs();
-        let sixty_u64 = SIXTY as u64;
+    /// The maximum time.
+    ///
+    /// In current implementation is above 7 years.
+    ///
+    /// # Examples
+    /// ```
+    /// use subtitle_lines::Time;
+    ///
+    /// assert_eq!(Time::MAX, Time::new_unchecked(u16::MAX, 59, 59, 999));
+    /// ```
+    pub const MAX: Time = Time::new_unchecked(u16::MAX, 59, 59, 999);
 
-        let secs = (total_secs % sixty_u64) as u8;
-        let total_mins = total_secs / sixty_u64;
+    const MAX_SECONDS: u32 = (59 + 59 * 60 + u16::MAX as u32 * 60 * 60);
 
-        let mins = (total_mins % sixty_u64) as u8;
-        let hours = (total_mins / sixty_u64) as u16;
-
-        Time::new_unchecked(hours, mins, secs, millis)
+    /// Returns true if this `Time` spans no time.
+    ///
+    /// # Examples
+    /// ```
+    /// use subtitle_lines::Time;
+    ///
+    /// assert!(Time::ZERO.is_zero());
+    /// assert!(Time::new_unchecked(0, 0, 0, 0).is_zero());
+    /// assert!(Time::from_millis(0).is_zero());
+    /// assert!(Time::from_secs(0).is_zero());
+    ///
+    /// assert!(!Time::new_unchecked(1, 1, 1, 1).is_zero());
+    /// assert!(!Time::from_millis(1).is_zero());
+    /// assert!(!Time::from_secs(1).is_zero());
+    /// ```
+    pub const fn is_zero(&self) -> bool {
+        matches!(self.hours, 0)
+            && matches!(self.mins, 0)
+            && matches!(self.secs, 0)
+            && matches!(self.millis, 0)
     }
 }
 
