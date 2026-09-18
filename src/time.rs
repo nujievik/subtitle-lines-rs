@@ -4,6 +4,7 @@ mod new;
 
 use crate::{Error, Result};
 use std::{
+    iter::Sum,
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration,
 };
@@ -169,5 +170,18 @@ impl AddAssign for Time {
 impl SubAssign for Time {
     fn sub_assign(&mut self, other: Self) {
         *self = *self - other
+    }
+}
+
+impl Sum<Self> for Time {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        let mut new = Time::ZERO;
+        for t in iter {
+            new += t;
+        }
+        new
     }
 }
