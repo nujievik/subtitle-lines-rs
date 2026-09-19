@@ -99,7 +99,7 @@ impl Time {
     /// assert_eq!(569, time.subsec_millis());
     /// ```
     pub const fn from_millis(millis: u64) -> Time {
-        if millis > (Time::MAX_SECONDS as u64 * 1000 + 999) {
+        if millis > Self::MAX_MILLIS {
             panic!("overflow in Time::from_millis");
         }
 
