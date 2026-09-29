@@ -4,6 +4,8 @@ mod it;
 mod new;
 mod write;
 
+pub use crate::time::bufs::AssTimeBuf;
+
 use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines};
 use it::{IterState, TransIterState};
 use line::mark::SectionMarkId;

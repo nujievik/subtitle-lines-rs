@@ -6,6 +6,8 @@ mod it;
 mod new;
 mod write;
 
+pub use crate::time::bufs::VttTimeBuf;
+
 use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines, SrtLines};
 use it::{BodyState, CurrentState, TransIterState};
 use std::{

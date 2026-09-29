@@ -6,6 +6,8 @@ pub(crate) mod it;
 mod new;
 mod write;
 
+pub use crate::time::bufs::SrtTimeBuf;
+
 use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines};
 use it::{IterState, TransIterState};
 use std::{

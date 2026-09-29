@@ -79,19 +79,19 @@ impl<'a> Event<'a> {
 
         for i in 0..EventFormatPositions::NUMBER_OF_FIELDS {
             let bytes = match i {
-                i if i == positions.layer() => self.layer.format_into(&mut buf.num_buf).as_bytes(),
+                i if i == positions.layer() => self.layer.format_into(buf.num_buffer()).as_bytes(),
                 i if i == positions.start() => buf.format_time(self.start),
                 i if i == positions.end() => buf.format_time(self.end),
                 i if i == positions.style_name() => self.style_name,
                 i if i == positions.character_name() => self.character_name,
                 i if i == positions.margin_l() => {
-                    self.margin_l.format_into(&mut buf.num_buf).as_bytes()
+                    self.margin_l.format_into(buf.num_buffer()).as_bytes()
                 }
                 i if i == positions.margin_r() => {
-                    self.margin_r.format_into(&mut buf.num_buf).as_bytes()
+                    self.margin_r.format_into(buf.num_buffer()).as_bytes()
                 }
                 i if i == positions.margin_v() => {
-                    self.margin_v.format_into(&mut buf.num_buf).as_bytes()
+                    self.margin_v.format_into(buf.num_buffer()).as_bytes()
                 }
                 i if i == positions.effect() => self.effect,
                 _ => continue,
