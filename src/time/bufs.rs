@@ -14,15 +14,13 @@ impl AssTimeBuf {
     pub const fn new() -> AssTimeBuf {
         Self {
             num_buf: NumBuffer::new(),
-            buf: *b"0:00:00:00",
+            buf: *b"0:00:00.00",
         }
     }
 
     pub fn format_time(&mut self, mut time: Time) -> &[u8] {
         time.hours = time.hours.min(9);
-        if time.millis > 99 {
-            time.millis = time.millis / 10;
-        }
+        time.millis = time.millis / 10;
 
         let hours_bytes = time.hours.format_into(&mut self.num_buf).as_bytes();
         self.buf[0] = hours_bytes[0];
