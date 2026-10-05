@@ -8,7 +8,7 @@ mod write;
 
 pub use crate::time::bufs::SrtTimeBuf;
 
-use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines};
+use crate::{ByteLines, FromBytes, FromLines, IntoLines, Result, SourceLines};
 use it::{IterState, TransIterState};
 use std::{
     fs::File,
@@ -33,4 +33,5 @@ pub fn open_file<'a, P: AsRef<Path>>(path: P) -> Result<SrtLines<'a, BufReader<F
     SrtLines::open_file(path)
 }
 
-impl<'a, T: BufRead> ConversionLines<'a, T> for SrtLines<'a, T> {}
+impl<'a, T: BufRead> FromLines<'a, T> for SrtLines<'a, T> {}
+impl<'a, T: BufRead> IntoLines<'a, T> for SrtLines<'a, T> {}

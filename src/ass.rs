@@ -6,7 +6,7 @@ mod write;
 
 pub use crate::time::bufs::AssTimeBuf;
 
-use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines};
+use crate::{ByteLines, FromBytes, FromLines, IntoLines, Result, SourceLines};
 use it::{IterState, TransIterState};
 use line::mark::SectionMarkId;
 use std::{
@@ -33,4 +33,5 @@ pub fn open_file<'a, P: AsRef<Path>>(path: P) -> Result<AssLines<'a, BufReader<F
     AssLines::open_file(path)
 }
 
-impl<'a, T: BufRead> ConversionLines<'a, T> for AssLines<'a, T> {}
+impl<'a, T: BufRead> FromLines<'a, T> for AssLines<'a, T> {}
+impl<'a, T: BufRead> IntoLines<'a, T> for AssLines<'a, T> {}

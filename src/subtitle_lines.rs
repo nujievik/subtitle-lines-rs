@@ -1,6 +1,6 @@
 use crate::{
-    ConversionLines, Error, FromBytes, RegularAssLines, RegularSrtLines, RegularVttLines, Result,
-    SourceLines, WriteLines, WriteOptions,
+    Error, FromBytes, FromLines, IntoLines, RegularAssLines, RegularSrtLines, RegularVttLines,
+    Result, SourceLines, WriteLines, WriteOptions,
 };
 use std::{
     fs::File,
@@ -39,7 +39,8 @@ impl<'a> SubtitleLines<'a, BufReader<File>> {
     }
 }
 
-impl<'a, T: BufRead> ConversionLines<'a, T> for SubtitleLines<'a, T> {}
+impl<'a, T: BufRead> FromLines<'a, T> for SubtitleLines<'a, T> {}
+impl<'a, T: BufRead> IntoLines<'a, T> for SubtitleLines<'a, T> {}
 
 impl<'a, T: BufRead> SubtitleLines<'a, T> {
     pub fn write<P>(self, path: &P) -> Result<()>

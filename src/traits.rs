@@ -42,7 +42,7 @@ pub trait StreamingIterator {
 }
 
 /// A trait for constructs a subtitle lines from **regular** bytes.
-/// If conversion is required, use [`ConversionLines`] after construct.
+/// If conversion is required, use [`IntoLines`] after construct.
 pub trait FromBytes<'a> {
     fn from_bytes<B>(bytes: &'a B) -> Self
     where
@@ -76,7 +76,75 @@ pub trait FromBytes<'a> {
     }
 }
 
-// TODO: rename to ConvertLines.
+pub trait FromLines<'a, T: BufRead> {
+    fn from_ass(ass: AssLines<'a, T>) -> Self
+    where
+        Self: From<AssLines<'a, T>>,
+    {
+        Self::from(ass)
+    }
+
+    fn from_srt(srt: SrtLines<'a, T>) -> Self
+    where
+        Self: From<SrtLines<'a, T>>,
+    {
+        Self::from(srt)
+    }
+
+    fn from_vtt(vtt: VttLines<'a, T>) -> Self
+    where
+        Self: From<VttLines<'a, T>>,
+    {
+        Self::from(vtt)
+    }
+
+    fn from_byte_lines(byte_lines: ByteLines<'a, T>) -> Self
+    where
+        Self: From<ByteLines<'a, T>>,
+    {
+        Self::from(byte_lines)
+    }
+}
+
+pub trait IntoLines<'a, T: BufRead> {
+    fn into_ass(self) -> AssLines<'a, T>
+    where
+        AssLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        AssLines::from(self)
+    }
+
+    fn into_srt(self) -> SrtLines<'a, T>
+    where
+        SrtLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        SrtLines::from(self)
+    }
+
+    fn into_vtt(self) -> VttLines<'a, T>
+    where
+        VttLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        VttLines::from(self)
+    }
+
+    fn into_byte_lines(self) -> ByteLines<'a, T>
+    where
+        ByteLines<'a, T>: From<Self>,
+        Self: 'a,
+        Self: Sized,
+    {
+        ByteLines::from(self)
+    }
+}
+
+#[deprecated(note = "Use `FromLines` and `IntoLines` instead")]
 pub trait ConversionLines<'a, T: BufRead> {
     fn from_ass(ass: AssLines<'a, T>) -> Self
     where

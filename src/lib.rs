@@ -32,7 +32,7 @@ pub use options::WriteOptions;
 pub use srt::SrtLines;
 pub use subtitle_lines::{SubtitleLines, open_file};
 pub use time::Time;
-pub use traits::{ConversionLines, FromBytes, StreamingIterator, WriteLines};
+pub use traits::{ConversionLines, FromBytes, FromLines, IntoLines, StreamingIterator, WriteLines};
 pub use vtt::VttLines;
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -8,7 +8,7 @@ mod write;
 
 pub use crate::time::bufs::VttTimeBuf;
 
-use crate::{ByteLines, ConversionLines, FromBytes, Result, SourceLines, SrtLines};
+use crate::{ByteLines, FromBytes, FromLines, IntoLines, Result, SourceLines, SrtLines};
 use it::{BodyState, CurrentState, TransIterState};
 use std::{
     fs::File,
@@ -33,4 +33,5 @@ pub fn open_file<'a, P: AsRef<Path>>(path: P) -> Result<VttLines<'a, BufReader<F
     VttLines::open_file(path)
 }
 
-impl<'a, T: BufRead> ConversionLines<'a, T> for VttLines<'a, T> {}
+impl<'a, T: BufRead> FromLines<'a, T> for VttLines<'a, T> {}
+impl<'a, T: BufRead> IntoLines<'a, T> for VttLines<'a, T> {}
