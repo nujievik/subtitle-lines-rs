@@ -171,7 +171,6 @@ fn next_from_srt_event<'a, T: BufRead>(
     mut event: Event<'a>,
     mut updated_times: bool,
 ) -> Option<AssLine<'a>> {
-    buf.clear();
     let mut updated_text = false;
 
     while let Some(line) = srt_lines.next() {
@@ -188,6 +187,8 @@ fn next_from_srt_event<'a, T: BufRead>(
                 if updated_text {
                     *state =
                         TransIterState::Events(TransIterStateEvents::TimeRange(bs.start, bs.end));
+
+                    event.text = buf.as_slice();
                     return Some(AssLine::Event(event));
                 }
                 event.start = bs.start;
@@ -199,7 +200,10 @@ fn next_from_srt_event<'a, T: BufRead>(
                 if updated_text {
                     buf.push(b'\\');
                     buf.push(b'n');
+                } else {
+                    buf.clear();
                 }
+
                 buf.extend_from_slice(bs.bytes);
                 updated_text = true;
             }
@@ -267,7 +271,6 @@ fn next_from_vtt_event<'a, T: BufRead>(
     mut event: Event<'a>,
     mut updated_times: bool,
 ) -> Option<AssLine<'a>> {
-    buf.clear();
     let mut updated_text = false;
 
     while let Some(line) = vtt_lines.next() {
@@ -284,6 +287,8 @@ fn next_from_vtt_event<'a, T: BufRead>(
                 if updated_text {
                     *state =
                         TransIterState::Events(TransIterStateEvents::TimeRange(bs.start, bs.end));
+
+                    event.text = buf.as_slice();
                     return Some(AssLine::Event(event));
                 }
                 event.start = bs.start;
@@ -295,7 +300,10 @@ fn next_from_vtt_event<'a, T: BufRead>(
                 if updated_text {
                     buf.push(b'\\');
                     buf.push(b'n');
+                } else {
+                    buf.clear();
                 }
+
                 buf.extend_from_slice(bs.bytes);
                 updated_text = true;
             }
