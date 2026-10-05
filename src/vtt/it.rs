@@ -89,7 +89,7 @@ fn next_regular<'a, T: BufRead>(
     }
 
     if let CurrentState::InComment = current_state {
-        return Some(VttLine::Comment(Comment::new(bytes, bytes)));
+        return Some(VttLine::Comment(Comment::new(bytes, bytes, false)));
     }
     if bytes.starts_with(b"NOTE") {
         *current_state = CurrentState::InComment;
@@ -98,7 +98,7 @@ fn next_regular<'a, T: BufRead>(
         } else {
             byte_helpers::trim_start(&bytes[4..])
         };
-        return Some(VttLine::Comment(Comment::new(bytes, text)));
+        return Some(VttLine::Comment(Comment::new(bytes, text, true)));
     }
 
     if let BodyState::RegionsAndStyles = body_state {
@@ -155,7 +155,7 @@ fn next_regular<'a, T: BufRead>(
 }
 
 fn next_from_ass<'a, T: BufRead>(
-    lines: &mut RegularAssLines<'_, T>,
+    lines: &'a mut RegularAssLines<'_, T>,
     buf: &'a mut Vec<u8>,
     trans_state: &mut TransIterState,
 ) -> Option<VttLine<'a>> {
@@ -165,15 +165,19 @@ fn next_from_ass<'a, T: BufRead>(
         return Some(line);
     }
 
-    let event = lines.find_map(|l| match l {
-        AssLine::Event(event) => Some(event),
+    match lines.find(|l| matches!(l, AssLine::Event(_) | AssLine::Comment(_))) {
+        Some(AssLine::Event(event)) => {
+            *trans_state = TransIterState::TimeRange(event.start, event.end);
+            buf.clear();
+            buf.extend_from_slice(event.text);
+            next_from_trans_state(buf, trans_state)
+        }
+        Some(AssLine::Comment(c)) => {
+            *trans_state = TransIterState::Blank;
+            Some(VttLine::Comment(c.to_vtt()))
+        }
         _ => None,
-    })?;
-    *trans_state = TransIterState::TimeRange(event.start, event.end);
-    buf.clear();
-    buf.extend_from_slice(event.text);
-
-    next_from_trans_state(buf, trans_state)
+    }
 }
 
 fn next_from_srt<'a, T: BufRead>(

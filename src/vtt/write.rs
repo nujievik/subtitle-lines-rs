@@ -45,6 +45,12 @@ impl<'a, T: BufRead> WriteLines for VttLines<'a, T> {
                     cue_id_buf.extend_from_slice(bytes);
                     continue;
                 }
+
+                VttLine::Comment(c) => {
+                    writer.write(c.prefix())?;
+                    c.text()
+                }
+
                 VttLine::TimeRangeAndStyle(tr) if !is_regular_source || is_setted_time => {
                     let mut start = tr.start;
                     let mut end = tr.end;

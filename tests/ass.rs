@@ -94,6 +94,35 @@ fn iter_from_vtt_lines() {
 }
 
 #[test]
+fn iter_comments_from_vtt_lines() {
+    let s = r"NOTE 0
+1
+2
+
+NOTE 3
+4
+5";
+
+    let mut ass = AssLines::from(VttLines::from_str(s));
+    for _ in 0..6 {
+        let _ = ass.next().unwrap();
+    }
+
+    for i in 0..6 {
+        let line = ass.next().unwrap();
+        match &line {
+            AssLine::Comment(comment) => {
+                assert_eq!(comment.prefix(), b"; ");
+                assert_eq!(comment.text(), i.to_string().as_bytes());
+            }
+            _ => panic!("expect comment line"),
+        }
+    }
+
+    assert!(ass.next().is_none());
+}
+
+#[test]
 fn iter_big_file() {
     let mut ass = AssLines::open_file(data("big.ass")).unwrap();
     assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));

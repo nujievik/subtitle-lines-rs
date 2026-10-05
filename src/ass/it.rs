@@ -1,6 +1,6 @@
 use super::line::{
-    AssLine, Comment, Event, EventFormat, EventFormatPositions, ScriptInfo, ScriptType,
-    SectionMark, WrapStyle,
+    AssLine, Comment, CommentPrefix, Event, EventFormat, EventFormatPositions, ScriptInfo,
+    ScriptType, SectionMark, WrapStyle,
 };
 use super::{AssLines, RegularAssLines, SectionMarkId};
 use crate::{
@@ -275,6 +275,16 @@ fn next_from_vtt_event<'a, T: BufRead>(
 
     while let Some(line) = vtt_lines.next() {
         match line {
+            VttLine::Comment(c) if !updated_times && !updated_text => {
+                buf.clear();
+                buf.extend_from_slice(c.text());
+                return Some(AssLine::Comment(Comment::new_with(
+                    &[],
+                    buf,
+                    CommentPrefix::Semicolon,
+                )));
+            }
+
             VttLine::Blank if updated_text => break,
             VttLine::Blank => {
                 if updated_times {
@@ -283,6 +293,7 @@ fn next_from_vtt_event<'a, T: BufRead>(
                     event.end = Time::new_unchecked(0, 0, 0, 0);
                 }
             }
+
             VttLine::TimeRangeAndStyle(bs) => {
                 if updated_text {
                     *state =
@@ -296,6 +307,7 @@ fn next_from_vtt_event<'a, T: BufRead>(
                 updated_times = true;
                 updated_text = false;
             }
+
             VttLine::Text(bs) if updated_times => {
                 if updated_text {
                     buf.push(b'\\');
@@ -307,6 +319,7 @@ fn next_from_vtt_event<'a, T: BufRead>(
                 buf.extend_from_slice(bs.bytes);
                 updated_text = true;
             }
+
             _ => continue,
         }
     }

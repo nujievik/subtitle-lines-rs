@@ -28,7 +28,10 @@ impl<'a, T: BufRead> WriteLines for AssLines<'a, T> {
                     continue;
                 }
                 AssLine::SectionMark(mark) => mark.as_bytes(),
-                AssLine::Comment(comment) => comment.bytes,
+                AssLine::Comment(comment) => {
+                    writer.write(comment.prefix())?;
+                    comment.text()
+                }
                 AssLine::ScriptInfo(info) => info.as_bytes(),
                 AssLine::EventFormat(format) => {
                     positions = *format.positions();

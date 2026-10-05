@@ -81,3 +81,34 @@ fn iter_from_srt_lines() {
     }
     assert!(vtt.next().is_none());
 }
+
+#[test]
+fn iter_comments_from_ass_lines() {
+    let s = r"; 0
+;1
+!: 2
+
+!: 3
+; 4
+; 5";
+
+    let mut vtt = VttLines::from(AssLines::from_str(s));
+
+    assert!(matches!(vtt.next().unwrap(), VttLine::VttFileMark(_)));
+    assert!(matches!(vtt.next().unwrap(), VttLine::Blank));
+
+    for i in 0..6 {
+        let line = vtt.next().unwrap();
+        match &line {
+            VttLine::Comment(comment) => {
+                assert_eq!(comment.prefix(), b"NOTE ");
+                assert_eq!(comment.text(), i.to_string().as_bytes());
+            }
+            _ => panic!("expect comment line"),
+        }
+
+        assert!(matches!(vtt.next().unwrap(), VttLine::Blank));
+    }
+
+    assert!(vtt.next().is_none());
+}

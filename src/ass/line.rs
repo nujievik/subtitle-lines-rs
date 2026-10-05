@@ -11,6 +11,8 @@ pub use event::{
 pub use info::{ScriptInfo, ScriptType, Title, WrapStyle};
 pub use mark::SectionMark;
 
+pub(crate) use comment::CommentPrefix;
+
 use crate::Time;
 use mark::SectionMarkId;
 

@@ -20,7 +20,8 @@ pub enum VttLine<'a> {
 #[derive(Debug, PartialEq)]
 pub struct Comment<'a> {
     pub(crate) bytes: &'a [u8],
-    text: &'a [u8],
+    pub(crate) text: &'a [u8],
+    pub(crate) has_note_prefix: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -46,7 +47,7 @@ impl<'a> VttLine<'a> {
             Self::StyleMark => b"STYLE",
             Self::Region(Region { bytes }) => bytes,
             Self::Style(Style { bytes }) => bytes,
-            Self::Comment(Comment { bytes, .. }) => bytes,
+            Self::Comment(Comment { text, .. }) => text,
             Self::CueId(CueId { bytes }) => bytes,
             Self::TimeRangeAndStyle(TimeRangeAndStyle { bytes, .. }) => bytes,
             Self::Metadata(Metadata { bytes, .. }) => bytes,
@@ -73,11 +74,21 @@ impl<'a> VttLine<'a> {
 }
 
 impl<'a> Comment<'a> {
-    pub(crate) fn new(bytes: &'a [u8], text: &'a [u8]) -> Self {
-        Comment { bytes, text }
+    pub(crate) fn new(bytes: &'a [u8], text: &'a [u8], has_note_prefix: bool) -> Self {
+        Comment {
+            bytes,
+            text,
+            has_note_prefix,
+        }
     }
 
-    pub fn text(&self) -> &[u8] {
+    #[inline]
+    pub const fn prefix(&self) -> &[u8] {
+        if self.has_note_prefix { b"NOTE " } else { b"" }
+    }
+
+    #[inline]
+    pub const fn text(&self) -> &[u8] {
         self.text
     }
 }
