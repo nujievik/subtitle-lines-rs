@@ -1,7 +1,7 @@
 [package]
 name = "subtitle-lines"
-version = "0.3.4"
-description = "Streaming, byte-oriented subtitle parsing and conversion library."
+version = "0.3.5"
+description = "Streaming, byte-oriented subtitle parsing and conversion library"
 authors = ["Ivan Reutov <nujievik@gmail.com>"]
 edition = "2024"
 rust-version = "1.98"

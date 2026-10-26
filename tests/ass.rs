@@ -164,3 +164,34 @@ fn iter_big_file() {
 
     assert!(ass.next().is_none());
 }
+
+#[test]
+fn iter_event_with_empty_text() {
+    const BYTES: &[u8] = b"[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.20,0:00:01.75,D,,0000,0000,0000,,";
+
+    let mut ass = AssLines::from_bytes(BYTES);
+    assert!(matches!(ass.next().unwrap(), AssLine::SectionMark(_)));
+    assert!(matches!(ass.next().unwrap(), AssLine::EventFormat(_)));
+
+    let event = match ass.next().unwrap() {
+        AssLine::Event(event) => event,
+        _ => panic!("unexpected line type"),
+    };
+
+    assert_eq!(
+        event.as_bytes(),
+        b"Dialogue: 0,0:00:00.20,0:00:01.75,D,,0000,0000,0000,,"
+    );
+    assert_eq!(event.layer, 0);
+    assert_eq!(event.start, Time::from_millis(200));
+    assert_eq!(event.end, Time::from_millis(1750));
+    assert_eq!(event.style_name, b"D");
+    assert_eq!(event.character_name, b"");
+    assert_eq!(event.margin_l, 0);
+    assert_eq!(event.margin_r, 0);
+    assert_eq!(event.margin_v, 0);
+    assert_eq!(event.effect, b"");
+    assert_eq!(event.text, b"");
+}

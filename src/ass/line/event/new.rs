@@ -18,6 +18,11 @@ impl<'a> Event<'a> {
             }
         }
 
+        let text = match remainder.len() {
+            1 => &[],
+            _ => remainder,
+        };
+
         Some(Self {
             bytes: line,
             ty,
@@ -30,7 +35,7 @@ impl<'a> Event<'a> {
             margin_r: byte_helpers::get_u16(parts[positions.margin_r() as usize])?,
             margin_v: byte_helpers::get_u16(parts[positions.margin_v() as usize])?,
             effect: parts[positions.effect() as usize],
-            text: remainder,
+            text,
         })
     }
 
