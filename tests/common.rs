@@ -1,6 +1,6 @@
-#![allow(dead_code)]
+#![allow(unused)]
 
-use std::path::PathBuf;
+pub use std::{assert_matches, path::PathBuf};
 
 pub fn data(s: &str) -> PathBuf {
     let mut p = PathBuf::from(env!("CARGO_MANIFEST_DIR"));

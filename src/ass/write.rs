@@ -56,7 +56,7 @@ impl<'a, T: BufRead> WriteLines for AssLines<'a, T> {
                     is_written_blank = false;
                     continue;
                 }
-                AssLine::Unrecognized(bytes) => bytes,
+                _ => line.as_bytes(),
             };
             writer.write_all(bytes)?;
             writer.write_all(b"\n")?;

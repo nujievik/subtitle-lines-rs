@@ -1,6 +1,6 @@
 use super::line::{
-    AssLine, Comment, CommentPrefix, Event, EventFormat, EventFormatPositions, ScriptInfo,
-    ScriptType, SectionMark, WrapStyle,
+    AssLine, Comment, CommentPrefix, Event, EventFormat, EventFormatPositions, Font, FontName,
+    ScriptInfo, ScriptType, SectionMark, WrapStyle,
 };
 use super::{AssLines, RegularAssLines, SectionMarkId};
 use crate::{
@@ -80,14 +80,22 @@ fn next_regular<'a, T: BufRead>(
         return Some(AssLine::Blank);
     }
 
-    if let Some(comment) = Comment::get_new(line) {
-        return Some(AssLine::Comment(comment));
-    }
-
     if let Some(mark) = SectionMark::get_new(line) {
         *state = IterState::OutsideEvents;
         *section_state = mark.id;
         return Some(AssLine::SectionMark(mark));
+    }
+
+    if let SectionMarkId::Fonts = section_state {
+        return Some(if let Some(font_name) = FontName::get_new(line) {
+            AssLine::FontName(font_name)
+        } else {
+            AssLine::Font(Font::new(line))
+        });
+    }
+
+    if let Some(comment) = Comment::get_new(line) {
+        return Some(AssLine::Comment(comment));
     }
 
     if let SectionMarkId::ScriptInfo = section_state {

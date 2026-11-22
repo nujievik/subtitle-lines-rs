@@ -1,5 +1,6 @@
 mod comment;
 mod event;
+mod font;
 mod info;
 pub(crate) mod mark;
 
@@ -8,6 +9,7 @@ pub use event::{
     Event,
     format::{EventFormat, EventFormatPositions},
 };
+pub use font::{Font, FontName};
 pub use info::{ScriptInfo, ScriptType, Title, WrapStyle};
 pub use mark::SectionMark;
 
@@ -25,6 +27,8 @@ pub enum AssLine<'a> {
     ScriptInfo(ScriptInfo<'a>),
     EventFormat(EventFormat<'a>),
     Event(Event<'a>),
+    FontName(FontName<'a>),
+    Font(Font<'a>),
     Unrecognized(&'a [u8]),
 }
 
@@ -38,6 +42,8 @@ impl<'a> AssLine<'a> {
             Self::ScriptInfo(x) => x.as_bytes(),
             Self::EventFormat(x) => x.as_bytes(),
             Self::Event(x) => x.bytes,
+            Self::FontName(x) => x.as_bytes(),
+            Self::Font(x) => x.as_bytes(),
             Self::Unrecognized(bytes) => bytes,
         }
     }

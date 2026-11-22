@@ -195,3 +195,79 @@ Dialogue: 0,0:00:00.20,0:00:01.75,D,,0000,0000,0000,,";
     assert_eq!(event.effect, b"");
     assert_eq!(event.text, b"");
 }
+
+#[test]
+fn iter_with_fonts() {
+    let mut ass = AssLines::open_file(data("with_fonts.ass")).unwrap();
+
+    assert_matches!(ass.next().unwrap(), AssLine::SectionMark(_));
+    assert_matches!(ass.next().unwrap(), AssLine::Comment(_));
+    assert_matches!(ass.next().unwrap(), AssLine::Comment(_));
+    assert_matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::ScriptType(_))
+    );
+    assert_matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::PlayResX(_))
+    );
+    assert_matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::PlayResY(_))
+    );
+    assert_matches!(
+        ass.next().unwrap(),
+        AssLine::ScriptInfo(ScriptInfo::WrapStyle(_))
+    );
+    assert_matches!(ass.next().unwrap(), AssLine::Unrecognized(_));
+    assert_matches!(ass.next().unwrap(), AssLine::Unrecognized(_));
+    assert_matches!(ass.next().unwrap(), AssLine::Blank);
+
+    assert_matches!(ass.next().unwrap(), AssLine::SectionMark(_));
+    for _ in 0..12 {
+        assert_matches!(ass.next().unwrap(), AssLine::Unrecognized(_));
+    }
+    assert_matches!(ass.next().unwrap(), AssLine::Blank);
+
+    assert_matches!(ass.next().unwrap(), AssLine::SectionMark(_));
+
+    let fname = match ass.next().unwrap() {
+        AssLine::FontName(x) => x,
+        _ => panic!("must be AssLine::FontName"),
+    };
+    assert_eq!(fname.name(), b"cyrillichover_0.ttf");
+    for _ in 0..1065 {
+        assert_matches!(ass.next().unwrap(), AssLine::Font(_));
+    }
+    assert_matches!(ass.next().unwrap(), AssLine::Blank);
+
+    let fname = match ass.next().unwrap() {
+        AssLine::FontName(x) => x,
+        _ => panic!("must be AssLine::FontName"),
+    };
+    assert_eq!(fname.name(), b"Impress BT_0.ttf");
+    for _ in 0..929 {
+        assert_matches!(ass.next().unwrap(), AssLine::Font(_));
+    }
+    assert_matches!(ass.next().unwrap(), AssLine::Blank);
+
+    let fname = match ass.next().unwrap() {
+        AssLine::FontName(x) => x,
+        _ => panic!("must be AssLine::FontName"),
+    };
+    assert_eq!(fname.name(), b"JakobExtraCTT_0.ttf");
+
+    for _ in 0..719 {
+        assert_matches!(ass.next().unwrap(), AssLine::Font(_));
+    }
+    assert_matches!(ass.next().unwrap(), AssLine::Blank);
+    assert_matches!(ass.next().unwrap(), AssLine::Blank);
+
+    assert_matches!(ass.next().unwrap(), AssLine::SectionMark(_));
+    assert_matches!(ass.next().unwrap(), AssLine::EventFormat(_));
+    for _ in 0..345 {
+        assert_matches!(ass.next().unwrap(), AssLine::Event(_));
+    }
+
+    assert!(ass.next().is_none());
+}
