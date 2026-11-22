@@ -271,3 +271,12 @@ fn iter_with_fonts() {
 
     assert!(ass.next().is_none());
 }
+
+#[test]
+fn iter_vertical_tab_line_as_blank() {
+    let mut ass = AssLines::from_bytes(b"\x0B\n\x0B\x0B\x0B");
+    for _ in 0..2 {
+        assert_matches!(ass.next().unwrap(), AssLine::Blank);
+    }
+    assert!(ass.next().is_none());
+}

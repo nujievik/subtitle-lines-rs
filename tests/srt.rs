@@ -80,3 +80,12 @@ fn iter_from_vtt_lines() {
     }
     assert!(srt.next().is_none());
 }
+
+#[test]
+fn iter_vertical_tab_line_as_blank() {
+    let mut srt = SrtLines::from_bytes(b"\x0B\n\x0B\x0B\x0B");
+    for _ in 0..2 {
+        assert_matches!(srt.next().unwrap(), SrtLine::Blank);
+    }
+    assert!(srt.next().is_none());
+}

@@ -3,11 +3,11 @@ pub fn trim(data: &[u8]) -> &[u8] {
     let mut start = 0;
     let mut end = data.len();
 
-    while start < end && data[start].is_ascii_whitespace() {
+    while start < end && is_ascii_whitespace(data[start]) {
         start += 1;
     }
 
-    while end > start && data[end - 1].is_ascii_whitespace() {
+    while end > start && is_ascii_whitespace(data[end - 1]) {
         end -= 1;
     }
 
@@ -16,7 +16,7 @@ pub fn trim(data: &[u8]) -> &[u8] {
 
 pub fn trim_start(data: &[u8]) -> &[u8] {
     let mut pos = 0;
-    while pos < data.len() && data[pos].is_ascii_whitespace() {
+    while pos < data.len() && is_ascii_whitespace(data[pos]) {
         pos += 1;
     }
     &data[pos..]
@@ -24,7 +24,7 @@ pub fn trim_start(data: &[u8]) -> &[u8] {
 
 pub fn trim_end(data: &[u8]) -> &[u8] {
     let mut end = data.len();
-    while end > 0 && data[end - 1].is_ascii_whitespace() {
+    while end > 0 && is_ascii_whitespace(data[end - 1]) {
         end -= 1;
     }
     &data[0..end]
@@ -35,7 +35,7 @@ pub fn trim_bom(data: &[u8]) -> &[u8] {
 }
 
 pub fn words<'a>(data: &'a [u8]) -> impl Iterator<Item = &'a [u8]> {
-    data.split(|b| b.is_ascii_whitespace())
+    data.split(|b| is_ascii_whitespace(*b))
         .filter(|word| !word.is_empty())
 }
 
@@ -77,4 +77,10 @@ where
     } else {
         data
     }
+}
+
+// as std u8::is_ascii_whitespace + U+000B VERTICAL TAB
+#[inline]
+const fn is_ascii_whitespace(byte: u8) -> bool {
+    matches!(byte, b'\t' | b'\n' | b'\x0C' | b'\r' | b' ' | b'\x0B')
 }

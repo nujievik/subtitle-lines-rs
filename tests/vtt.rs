@@ -112,3 +112,12 @@ fn iter_comments_from_ass_lines() {
 
     assert!(vtt.next().is_none());
 }
+
+#[test]
+fn iter_vertical_tab_line_as_blank() {
+    let mut vtt = VttLines::from_bytes(b"\x0B\n\x0B\x0B\x0B");
+    for _ in 0..2 {
+        assert_matches!(vtt.next().unwrap(), VttLine::Blank);
+    }
+    assert!(vtt.next().is_none());
+}
