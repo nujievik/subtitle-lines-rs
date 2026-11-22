@@ -11,7 +11,7 @@ impl<'a, T: BufRead> WriteLines for AssLines<'a, T> {
         W: Write + ?Sized,
     {
         if opts.bom {
-            writer.write(crate::BOM)?;
+            writer.write_all(crate::BOM)?;
         }
 
         let mut is_written_blank = false;
@@ -22,14 +22,14 @@ impl<'a, T: BufRead> WriteLines for AssLines<'a, T> {
             let bytes: &[u8] = match &mut line {
                 AssLine::Blank => {
                     if !is_written_blank {
-                        writer.write(b"\n")?;
+                        writer.write_all(b"\n")?;
                         is_written_blank = true;
                     }
                     continue;
                 }
                 AssLine::SectionMark(mark) => mark.as_bytes(),
                 AssLine::Comment(comment) => {
-                    writer.write(comment.prefix())?;
+                    writer.write_all(comment.prefix())?;
                     comment.text()
                 }
                 AssLine::ScriptInfo(info) => info.as_bytes(),
@@ -58,11 +58,12 @@ impl<'a, T: BufRead> WriteLines for AssLines<'a, T> {
                 }
                 AssLine::Unrecognized(bytes) => bytes,
             };
-            writer.write(bytes)?;
-            writer.write(b"\n")?;
+            writer.write_all(bytes)?;
+            writer.write_all(b"\n")?;
             is_written_blank = false;
         }
 
+        writer.flush()?;
         Ok(())
     }
 }
@@ -77,8 +78,8 @@ impl<'a> Event<'a> {
     where
         W: Write + ?Sized,
     {
-        writer.write(self.ty.as_bytes())?;
-        writer.write(b": ")?;
+        writer.write_all(self.ty.as_bytes())?;
+        writer.write_all(b": ")?;
 
         for i in 0..EventFormatPositions::NUMBER_OF_FIELDS {
             let bytes = match i {
@@ -99,12 +100,12 @@ impl<'a> Event<'a> {
                 i if i == positions.effect() => self.effect,
                 _ => continue,
             };
-            writer.write(bytes)?;
-            writer.write(b",")?;
+            writer.write_all(bytes)?;
+            writer.write_all(b",")?;
         }
 
-        writer.write(self.text)?;
-        writer.write(b"\n")?;
+        writer.write_all(self.text)?;
+        writer.write_all(b"\n")?;
 
         Ok(())
     }

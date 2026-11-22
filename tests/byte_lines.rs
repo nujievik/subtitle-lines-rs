@@ -46,8 +46,8 @@ fn read_write_big_file() {
     let mut writer = BufWriter::new(f);
 
     while let Some(l) = blines.next() {
-        writer.write(l).unwrap();
-        writer.write(b"\n").unwrap();
+        writer.write_all(l).unwrap();
+        writer.write_all(b"\n").unwrap();
     }
     String::from_utf8(fs::read(&dest).unwrap()).unwrap();
 }

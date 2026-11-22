@@ -12,7 +12,7 @@ impl<'a, T: BufRead> WriteLines for SrtLines<'a, T> {
         W: Write + ?Sized,
     {
         if opts.bom {
-            writer.write(crate::BOM)?;
+            writer.write_all(crate::BOM)?;
         }
 
         let mut number = 1usize;
@@ -54,14 +54,14 @@ impl<'a, T: BufRead> WriteLines for SrtLines<'a, T> {
                     if !is_written_header {
                         if let Some((start, end)) = time_range {
                             if number > 1 {
-                                writer.write(b"\n")?;
+                                writer.write_all(b"\n")?;
                             }
-                            writer.write(number.format_into(&mut num_buf).as_bytes())?;
-                            writer.write(b"\n")?;
-                            writer.write(time_buf.0.format_time(start))?;
-                            writer.write(b" --> ")?;
-                            writer.write(time_buf.0.format_time(end))?;
-                            writer.write(b"\n")?;
+                            writer.write_all(number.format_into(&mut num_buf).as_bytes())?;
+                            writer.write_all(b"\n")?;
+                            writer.write_all(time_buf.0.format_time(start))?;
+                            writer.write_all(b" --> ")?;
+                            writer.write_all(time_buf.0.format_time(end))?;
+                            writer.write_all(b"\n")?;
 
                             number += 1;
                             is_written_header = true;
@@ -69,12 +69,13 @@ impl<'a, T: BufRead> WriteLines for SrtLines<'a, T> {
                             continue;
                         }
                     }
-                    writer.write(bytes)?;
-                    writer.write("\n".as_bytes())?;
+                    writer.write_all(bytes)?;
+                    writer.write_all("\n".as_bytes())?;
                 }
             }
         }
 
+        writer.flush()?;
         Ok(())
     }
 }

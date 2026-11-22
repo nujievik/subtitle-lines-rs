@@ -11,9 +11,9 @@ impl<'a, T: BufRead> WriteLines for VttLines<'a, T> {
         W: Write + ?Sized,
     {
         if opts.bom {
-            writer.write(crate::BOM)?;
+            writer.write_all(crate::BOM)?;
         }
-        writer.write(b"WEBVTT\n\n")?;
+        writer.write_all(b"WEBVTT\n\n")?;
 
         let is_regular_source = matches!(&self.source, SourceLines::Vtt(_));
 
@@ -33,7 +33,7 @@ impl<'a, T: BufRead> WriteLines for VttLines<'a, T> {
                 VttLine::VttFileMark(_) => continue,
                 VttLine::Blank => {
                     if !is_written_blank {
-                        writer.write(b"\n")?;
+                        writer.write_all(b"\n")?;
                         cue_id_buf.clear();
                         is_written_blank = true;
                         is_written_cue_time = false;
@@ -47,7 +47,7 @@ impl<'a, T: BufRead> WriteLines for VttLines<'a, T> {
                 }
 
                 VttLine::Comment(c) => {
-                    writer.write(c.prefix())?;
+                    writer.write_all(c.prefix())?;
                     c.text()
                 }
 
@@ -70,15 +70,15 @@ impl<'a, T: BufRead> WriteLines for VttLines<'a, T> {
                     }
 
                     if !cue_id_buf.is_empty() {
-                        writer.write(&cue_id_buf)?;
-                        writer.write(b"\n")?;
+                        writer.write_all(&cue_id_buf)?;
+                        writer.write_all(b"\n")?;
                         cue_id_buf.clear();
                     }
 
-                    writer.write(buf.0.format_time(start))?;
-                    writer.write(b" --> ")?;
-                    writer.write(buf.0.format_time(end))?;
-                    writer.write(b"\n")?;
+                    writer.write_all(buf.0.format_time(start))?;
+                    writer.write_all(b" --> ")?;
+                    writer.write_all(buf.0.format_time(end))?;
+                    writer.write_all(b"\n")?;
 
                     is_written_blank = false;
                     is_written_cue_time = true;
@@ -89,11 +89,12 @@ impl<'a, T: BufRead> WriteLines for VttLines<'a, T> {
                 line => line.as_bytes(),
             };
 
-            writer.write(bytes)?;
-            writer.write(b"\n")?;
+            writer.write_all(bytes)?;
+            writer.write_all(b"\n")?;
             is_written_blank = false;
         }
 
+        writer.flush()?;
         Ok(())
     }
 }
