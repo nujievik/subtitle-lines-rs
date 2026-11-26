@@ -2,6 +2,7 @@ use super::Time;
 use core::fmt::NumBuffer;
 
 pub struct TimeBuf<const N: usize> {
+    // TODO: remove it
     pub(crate) num_buf: NumBuffer<u16>,
     pub(crate) buf: [u8; N],
 }
@@ -52,8 +53,7 @@ impl AssTimeBuf {
         time.hours = time.hours.min(9);
         time.millis = time.millis / 10;
 
-        let hours_bytes = time.hours.format_into(&mut self.0.num_buf).as_bytes();
-        self.0.buf[0] = hours_bytes[0];
+        self.0.buf[0] = b'0' + (time.hours % 10) as u8;
         self.0.write_two_digits(2, time.mins as u16);
         self.0.write_two_digits(5, time.secs as u16);
         self.0.write_two_digits(8, time.millis);
@@ -236,29 +236,15 @@ impl<const N: usize> TimeBuf<N> {
     }
 
     fn write_two_digits(&mut self, start_idx: usize, value: u16) {
-        let bytes = value.format_into(&mut self.num_buf).as_bytes();
-        match bytes.len() {
-            1 => {
-                self.buf[start_idx] = b'0';
-                self.buf[start_idx + 1] = bytes[0];
-            }
-            _ => self.buf[start_idx..start_idx + 2].copy_from_slice(bytes),
-        }
+        let dst = &mut self.buf[start_idx..start_idx + 2];
+        dst[0] = b'0' + (value / 10 % 10) as u8;
+        dst[1] = b'0' + (value % 10) as u8;
     }
 
     fn write_three_digits(&mut self, start_idx: usize, value: u16) {
-        let bytes = value.format_into(&mut self.num_buf).as_bytes();
-        match bytes.len() {
-            1 => {
-                self.buf[start_idx] = b'0';
-                self.buf[start_idx + 1] = b'0';
-                self.buf[start_idx + 2] = bytes[0];
-            }
-            2 => {
-                self.buf[start_idx] = b'0';
-                self.buf[start_idx + 1..start_idx + 3].copy_from_slice(bytes);
-            }
-            _ => self.buf[start_idx..start_idx + 3].copy_from_slice(bytes),
-        }
+        let dst = &mut self.buf[start_idx..start_idx + 3];
+        dst[0] = b'0' + (value / 100 % 10) as u8;
+        dst[1] = b'0' + (value / 10 % 10) as u8;
+        dst[2] = b'0' + (value % 10) as u8;
     }
 }
